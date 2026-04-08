@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from app.core.source_family import SourceFamily, label_for
+from app.retrieval.overlap_gate import apply_overlap_gate
 from app.retrieval.vector_store import VectorStore
 from app.services.ai_provider import get_ai_provider
 
@@ -34,7 +35,7 @@ class SourceFamilyLane:
             top_k=top_k,
             source_families=[self.family],
         )
-        return [
+        shaped = [
             {
                 "id": chunk.id,
                 "document_id": chunk.document_id,
@@ -58,6 +59,11 @@ class SourceFamilyLane:
             }
             for chunk, score in hits
         ]
+        # Stub-embedder insurance: the hash-bucket embeddings produce
+        # non-zero cosine similarity for completely unrelated inputs.
+        # Drop hits that share no content tokens with the question so
+        # nonsense questions get an honest "no evidence" path.
+        return apply_overlap_gate(question, shaped)
 
 
 def label_for_lane(family: SourceFamily) -> str:

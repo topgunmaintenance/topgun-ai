@@ -177,6 +177,12 @@ uvicorn app.main:app --reload --port 8000
 The API will be available at `http://localhost:8000`. Interactive docs live at
 `http://localhost:8000/docs`. Health check: `http://localhost:8000/api/health`.
 
+If you prefer to launch both servers through Claude Preview, the repo
+ships a `.claude/launch.json` with two configurations (`topgun-backend`
+and `topgun-frontend`) that point at the backend venv's `uvicorn` with
+`--app-dir backend` and at `npm run dev --prefix frontend` on port
+`3001`.
+
 `requirements.txt` pulls in PyMuPDF, pdfplumber, pytesseract, and Pillow so
 real PDFs work out of the box. The OCR stage additionally needs the
 Tesseract binary to be installed on the host (see Prerequisites). Without
@@ -191,11 +197,12 @@ In a second terminal:
 cd frontend
 cp .env.example .env.local
 npm install
-npm run dev
+npm run dev -- --port 3001
 ```
 
-The app runs at `http://localhost:3000`. By default it talks to the backend at
-`http://localhost:8000`. Change `NEXT_PUBLIC_API_BASE_URL` in
+The app runs at `http://localhost:3001` (we default to 3001 because 3000 is
+often already occupied by another dev server). By default it talks to the
+backend at `http://localhost:8000`. Change `NEXT_PUBLIC_API_BASE_URL` in
 `frontend/.env.local` to point elsewhere.
 
 ### Tests
@@ -205,15 +212,18 @@ cd backend
 .venv/bin/pytest -q
 ```
 
-23 tests cover health, documents, query, ingestion, real PDF parsing,
+42 tests cover health, documents, query, ingestion, real PDF parsing,
 chunk metadata, vector store list/count/delete, document detail, the
-upload endpoint, and the answer formatter's weak/insufficient handling.
+upload endpoint, the answer formatter's weak/insufficient handling,
+Phase 3 source-family federation (intent classifier, coverage detector,
+grouped sections, browser push), and the retrieval overlap gate that
+keeps the stub embedder honest on nonsense questions.
 
 ### First-run validation
 
 After both servers are up:
 
-1. Open `http://localhost:3000` and load the **Dashboard**.
+1. Open `http://localhost:3001` and load the **Dashboard**.
 2. Drop a real PDF into the upload card. The status panel should switch
    to "Indexed" within a second or two and show the page count.
 3. Open **Library** and click the new document. The detail page shows
@@ -296,8 +306,12 @@ Short version:
   via the same interface.
 - The default AI provider is the deterministic `StubProvider`, whose
   hashed-bucket "embeddings" are good enough to demonstrate retrieval
-  but are not semantically meaningful. Set `AI_PROVIDER=openai` and
-  `OPENAI_API_KEY=...` once Phase 3's real provider is wired.
+  but are not semantically meaningful. A content-overlap gate
+  (`app/retrieval/overlap_gate.py`) suppresses hits that share no
+  tokens with the question so the stub embedder cannot leak false
+  confidence on nonsense questions — but this gate is a safety net,
+  not a substitute for real embeddings. Set `AI_PROVIDER=openai` and
+  `OPENAI_API_KEY=...` once Phase 4's real provider is wired.
 - OCR requires the Tesseract binary on the host. Without it, scanned or
   image-only PDFs are reported as `OCR skipped — missing pytesseract`
   on the document detail page.

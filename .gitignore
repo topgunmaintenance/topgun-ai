@@ -26,6 +26,10 @@ out/
 # --- Storage / uploads ---
 backend/storage/
 backend/.uploads/
+# When uvicorn is launched with --app-dir backend from the repo root
+# (e.g. via .claude/launch.json), the runtime upload dir lands at the
+# repo root instead of under backend/. Ignore that one too.
+/storage/
 
 # --- OS / editor ---
 .DS_Store

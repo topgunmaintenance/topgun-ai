@@ -38,6 +38,7 @@ from app.query.citation_builder import build_citations
 from app.query.coverage import CoverageDetector, families_from_metadata
 from app.query.intent_classifier import QueryIntent, QueryIntentClassifier
 from app.query.source_federation import SourceFamilyLane
+from app.retrieval.overlap_gate import apply_overlap_gate
 from app.retrieval.ranker import reciprocal_rank_fusion
 from app.retrieval.vector_store import VectorStore, get_vector_store
 from app.schemas.query import QueryRequest
@@ -160,7 +161,10 @@ class QueryEngine:
         hits = self._connector_registry.search(
             question=request.question, intent=intent
         )
-        return [h.to_chunk() for h in hits]
+        shaped = [h.to_chunk() for h in hits]
+        # Connector hits come from external systems and we have no
+        # embedding guarantees for them, so gate on content overlap too.
+        return apply_overlap_gate(request.question, shaped)
 
     def _lane_weights_from_intent(
         self, intent: QueryIntent
