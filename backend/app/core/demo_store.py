@@ -97,20 +97,35 @@ class DemoStore:
         with self._lock:
             return list(self.queries[:limit])
 
-    def find_query(self, question: str) -> dict[str, Any] | None:
-        """Heuristic lookup so the query workspace always has something to show.
+    def find_query(
+        self, question: str, *, min_overlap: int = 3, min_ratio: float = 0.5
+    ) -> dict[str, Any] | None:
+        """Heuristic lookup so the query workspace has something to show.
 
-        The match is intentionally loose: any keyword from the seeded query
-        that appears in the incoming question counts as a hit. This is the
-        demo equivalent of retrieval.
+        The matcher requires:
+
+        - at least ``min_overlap`` shared content tokens with a seeded
+          query, AND
+        - at least ``min_ratio`` of the *question's* content tokens to
+          overlap with the seeded query (so a generic word doesn't drag
+          in an unrelated canned answer).
+
+        This is intentionally strict — we'd rather fall through to the
+        real retrieval lanes than return a confident demo answer to a
+        question the demo store doesn't actually cover.
         """
-        needle = question.lower().strip()
-        if not needle:
+        question_tokens = set(_tokens(question))
+        if not question_tokens:
             return None
         with self._lock:
             for q in self.queries:
-                if any(tok in needle for tok in _tokens(q["question"])):
-                    return dict(q)
+                seed_tokens = set(_tokens(q["question"]))
+                overlap = question_tokens & seed_tokens
+                if len(overlap) < min_overlap:
+                    continue
+                if len(overlap) / len(question_tokens) < min_ratio:
+                    continue
+                return dict(q)
         return None
 
     # ------------------------------------------------------------------

@@ -32,3 +32,6 @@ backend/.uploads/
 Thumbs.db
 .idea/
 .vscode/
+
+# --- Claude / agent scratch ---
+.claude/

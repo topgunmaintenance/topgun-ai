@@ -25,7 +25,9 @@ SNIPPET_CHARS = 280
 def build_citations(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     citations: list[dict[str, Any]] = []
     for chunk in chunks:
-        score = float(chunk.get("score", 0.0))
+        # Prefer the raw retrieval similarity over the RRF fused score so
+        # the UI shows a number that's actually comparable across queries.
+        score = float(chunk.get("retrieval_score", chunk.get("score", 0.0)))
         score = max(0.0, min(1.0, score))
         snippet = truncate(
             normalize_whitespace(chunk.get("snippet", "")), SNIPPET_CHARS

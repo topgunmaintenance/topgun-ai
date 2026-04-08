@@ -53,7 +53,16 @@ class AnswerFormatter:
         if not chunks:
             return self._insufficient(reason="No chunks retrieved.")
 
-        top_score = max((float(c.get("score", 0.0)) for c in chunks), default=0.0)
+        # ``retrieval_score`` is the original cosine similarity from the
+        # lane (RRF preserves it). Fall back to ``score`` for callers that
+        # pass raw lane hits without going through fusion.
+        top_score = max(
+            (
+                float(c.get("retrieval_score", c.get("score", 0.0)))
+                for c in chunks
+            ),
+            default=0.0,
+        )
 
         if top_score < self.config.insufficient_score_floor:
             return self._insufficient(
