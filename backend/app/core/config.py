@@ -34,8 +34,17 @@ class Settings(BaseSettings):
     log_level: str = Field(default="info", alias="TOPGUN_LOG_LEVEL")
     api_host: str = Field(default="0.0.0.0", alias="TOPGUN_API_HOST")
     api_port: int = Field(default=8000, alias="TOPGUN_API_PORT")
+    # The .claude/launch.json and the README both default the frontend
+    # to port 3001 because 3000 is usually already occupied. We keep
+    # 3000 in the allowlist for developers who run it on the default
+    # port, and we also add the LAN-facing 127.0.0.1 variants so the
+    # stack works regardless of how the browser resolves localhost.
     cors_origins: str = Field(
-        default="http://localhost:3000", alias="TOPGUN_CORS_ORIGINS"
+        default=(
+            "http://localhost:3000,http://localhost:3001,"
+            "http://127.0.0.1:3000,http://127.0.0.1:3001"
+        ),
+        alias="TOPGUN_CORS_ORIGINS",
     )
 
     # --- Demo mode -------------------------------------------------------
