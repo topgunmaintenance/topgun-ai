@@ -32,11 +32,14 @@ def build_citations(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
         snippet = truncate(
             normalize_whitespace(chunk.get("snippet", "")), SNIPPET_CHARS
         )
+        components = chunk.get("components") or []
+        component = components[0] if components else None
         citations.append(
             {
                 "document_id": chunk["document_id"],
                 "document_title": chunk.get("document_title", chunk["document_id"]),
                 "document_type": chunk.get("document_type", "UNKNOWN"),
+                "source_family": chunk.get("source_family"),
                 "page": int(chunk.get("page", 1)),
                 "char_start": int(chunk.get("char_start", 0)),
                 "char_end": int(chunk.get("char_end", 0)),
@@ -44,6 +47,12 @@ def build_citations(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "score": score,
                 "lane": _primary_lane(chunk),
                 "source": chunk.get("source", "unknown"),
+                "aircraft_model": chunk.get("aircraft_model"),
+                "ata": list(chunk.get("ata") or []),
+                "component": component,
+                "document_code": chunk.get("document_code"),
+                "url": chunk.get("url"),
+                "vendor": chunk.get("vendor"),
                 "ocr": bool(chunk.get("ocr", False)),
                 "weak": score < WEAK_SCORE_FLOOR,
             }

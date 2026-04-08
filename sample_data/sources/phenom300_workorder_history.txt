@@ -1,0 +1,27 @@
+Work Order WO-2026-0418 — TOGA pushbutton intermittent
+Aircraft: Phenom 300, Tail N742JP
+Reported by: Captain on 2026-03-29
+ATA 22
+
+Discrepancy:
+"TOGA pushbutton on captain side-stick intermittently fails to engage
+TOGA mode in cool morning conditions. Function returns once the
+cockpit warms up. No fault message on the FGC at any time."
+
+Inspection:
+Performed FIM 22-10-00 troubleshooting flow. The side-stick TOGA
+discrete did not transition during the cold check at the captain
+position; both side discretes worked normally at room temperature.
+
+Corrective action:
+Replaced the captain side-stick TOGA pushbutton micro-switch with
+the supersession part listed in SB-22-04 per AMM 22-10-22. Performed
+post-installation functional test on both side-sticks at room
+temperature and on cold soak; all transitions normal. Updated the
+aircraft logbook entry referencing SB-22-04 compliance.
+
+Notes:
+Two prior work orders on N742JP referenced the same symptom in
+2025-11 and 2026-01 but were closed by re-seating the side-stick
+connector P22-S04. SB-22-04 supersession appears to have resolved
+the recurrence.

@@ -17,3 +17,10 @@ from app.main import app
 @pytest.fixture(scope="module")
 def client() -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture()
+def seeded_client():
+    """A TestClient that fires the lifespan, so demo sources are seeded."""
+    with TestClient(app) as c:
+        yield c

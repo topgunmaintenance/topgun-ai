@@ -47,6 +47,7 @@ class VectorStore(Protocol):
         embedding: list[float],
         top_k: int = 10,
         doc_types: list[str] | None = None,
+        source_families: list[str] | None = None,
     ) -> list[tuple[StoredChunk, float]]: ...
 
     def list_chunks(self, document_id: str) -> list[StoredChunk]: ...
@@ -54,6 +55,8 @@ class VectorStore(Protocol):
     def chunk_count(self, document_id: str) -> int: ...
 
     def delete_document(self, document_id: str) -> int: ...
+
+    def all_metadata(self) -> list[dict[str, Any]]: ...
 
 
 # ---------------------------------------------------------------------------
@@ -103,18 +106,40 @@ class MemoryVectorStore:
         embedding: list[float],
         top_k: int = 10,
         doc_types: list[str] | None = None,
+        source_families: list[str] | None = None,
     ) -> list[tuple[StoredChunk, float]]:
         with self._lock:
             candidates = list(self._chunks.values())
         if doc_types:
-            allowed = set(doc_types)
-            candidates = [c for c in candidates if c.metadata.get("type") in allowed]
+            allowed_types = set(doc_types)
+            candidates = [
+                c for c in candidates if c.metadata.get("type") in allowed_types
+            ]
+        if source_families:
+            allowed_families = set(source_families)
+            candidates = [
+                c
+                for c in candidates
+                if c.metadata.get("source_family") in allowed_families
+            ]
 
         scored = [
             (c, _cosine(c.embedding, embedding)) for c in candidates if c.embedding
         ]
         scored.sort(key=lambda pair: pair[1], reverse=True)
         return scored[:top_k]
+
+    def all_metadata(self) -> list[dict[str, Any]]:
+        """Return one metadata dict per indexed *document*."""
+        with self._lock:
+            seen: dict[str, dict[str, Any]] = {}
+            for c in self._chunks.values():
+                if c.document_id not in seen:
+                    seen[c.document_id] = {
+                        "document_id": c.document_id,
+                        **c.metadata,
+                    }
+            return list(seen.values())
 
     def list_chunks(self, document_id: str) -> list[StoredChunk]:
         with self._lock:

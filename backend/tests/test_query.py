@@ -32,6 +32,7 @@ def test_formatter_produces_sections_with_chunks() -> None:
             "document_id": "doc1",
             "document_title": "Sample AMM",
             "document_type": "AMM",
+            "source_family": "AMM",
             "page": 7,
             "snippet": "Pump case drain flow limits listed below.",
             "score": 0.9,
@@ -40,7 +41,15 @@ def test_formatter_produces_sections_with_chunks() -> None:
     result = AnswerFormatter().format(question="pump case drain?", chunks=chunks)
     assert result["confidence"]["label"] in {"high", "medium", "low"}
     assert result["related_documents"][0]["id"] == "doc1"
-    assert result["sections"][0]["heading"] == "Retrieved evidence"
+    # Phase 3 groups by source family — there should be one section per
+    # family, headed by the family label.
+    headings = [s["heading"] for s in result["sections"]]
+    assert "Maintenance Procedure" in headings
+    amm_section = next(
+        s for s in result["sections"] if s["heading"] == "Maintenance Procedure"
+    )
+    assert amm_section["family"] == "AMM"
+    assert amm_section["bullets"]
 
 
 def test_recent_queries(client: TestClient) -> None:

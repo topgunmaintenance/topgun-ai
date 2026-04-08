@@ -10,7 +10,9 @@ from app.schemas.common import ConfidenceReport, DocRef
 from app.schemas.query import (
     AnswerSection,
     Citation,
+    CoverageReport,
     ExtractedEntity,
+    QueryIntentSummary,
     QueryRequest,
     QueryResponse,
 )
@@ -30,6 +32,7 @@ class QueryService:
         return QueryResponse(
             question=request.question,
             answer=result["answer"],
+            troubleshooting_path=list(result.get("troubleshooting_path", [])),
             sections=[AnswerSection(**s) for s in result.get("sections", [])],
             citations=[
                 Citation(**c)
@@ -37,6 +40,12 @@ class QueryService:
             ],
             related_documents=[DocRef(**d) for d in result.get("related_documents", [])],
             entities=[ExtractedEntity(**e) for e in result.get("entities", [])],
+            intent=(
+                QueryIntentSummary(**result["intent"]) if result.get("intent") else None
+            ),
+            coverage=(
+                CoverageReport(**result["coverage"]) if result.get("coverage") else None
+            ),
             confidence=ConfidenceReport(**result["confidence"]),
             followups=list(result.get("followups", [])),
             latency_ms=latency_ms,

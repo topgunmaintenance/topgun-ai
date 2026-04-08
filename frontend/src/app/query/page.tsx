@@ -1,9 +1,11 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { AnswerPanel } from "@/components/query/AnswerPanel";
+import { BrowserPushCard } from "@/components/query/BrowserPushCard";
 import { CitationsPanel } from "@/components/query/CitationsPanel";
 import { EntitiesPanel } from "@/components/query/EntitiesPanel";
 import { FollowupPrompts } from "@/components/query/FollowupPrompts";
-import { LaneContribution } from "@/components/query/LaneContribution";
+import { IntentPanel } from "@/components/query/IntentPanel";
+import { MissingSourcesPanel } from "@/components/query/MissingSourcesPanel";
 import { QueryInput } from "@/components/query/QueryInput";
 import { RelatedDocsPanel } from "@/components/query/RelatedDocsPanel";
 import { SessionHeader } from "@/components/query/SessionHeader";
@@ -15,7 +17,7 @@ import type { QueryResponse } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 const DEFAULT_QUESTION =
-  "What are the likely causes of hydraulic pressure fluctuation on the Citation XLS?";
+  "TOGA lever button not working on a Phenom 300";
 
 async function loadAnswer(): Promise<QueryResponse> {
   try {
@@ -37,11 +39,13 @@ export default async function QueryWorkspacePage() {
           Intelligence panel · mission-critical
         </div>
         <h1 className="text-[30px] font-semibold leading-tight tracking-[-0.015em] text-ink-100 md:text-[38px]">
-          Ask manuals, records, and parts data — together.
+          Federate FIM, AMM, IPC, WDM, SB, history, and your authenticated
+          browser — in one query.
         </h1>
         <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-ink-300">
-          Every answer is structured, cited, and scored. Topgun AI never
-          invents part numbers, torque values, or procedural steps.
+          Every answer is grouped by source family, scored, and labeled
+          when evidence is weak. If a likely manual isn&apos;t connected,
+          Topgun AI says so explicitly instead of guessing.
         </p>
       </header>
 
@@ -60,10 +64,12 @@ export default async function QueryWorkspacePage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <AnswerPanel response={response} />
-          <LaneContribution citations={response.citations} />
+          <MissingSourcesPanel coverage={response.coverage} />
           <CitationsPanel citations={response.citations} />
         </div>
         <div className="space-y-5">
+          <IntentPanel intent={response.intent} />
+          <BrowserPushCard />
           <SourceDrawerPreview citation={topCitation} />
           <EntitiesPanel entities={response.entities} />
           <RelatedDocsPanel docs={response.related_documents} />

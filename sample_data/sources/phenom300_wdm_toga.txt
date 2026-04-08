@@ -1,0 +1,25 @@
+WDM 22-10-04 — TOGA Pushbutton Wiring Diagram
+Embraer Phenom 300 — Wiring Diagram Manual, Rev 9
+Aircraft: Phenom 300
+ATA 22 Auto Flight
+
+This sheet shows the wiring run between the captain side-stick TOGA
+pushbutton and the Flight Guidance Computer discrete input on
+connector P22-A12.
+
+Connector and pin reference:
+- Side-stick TOGA pushbutton harness end: connector P22-S04, pins 1
+  and 2 (signal and return).
+- Flight Guidance Computer end: connector P22-A12, pin 14 (TOGA
+  discrete input) and pin 15 (signal return).
+- Wire numbers: W22-1014 (signal) and W22-1015 (return). Both routed
+  through the side console wire bundle to the avionics rack.
+
+Continuity test points:
+- TP-22-A: at the side-stick connector P22-S04 pin 1.
+- TP-22-B: at the FGC connector P22-A12 pin 14.
+- TP-22-C: at the FGC connector P22-A12 pin 15.
+
+A continuity check between TP-22-A and TP-22-B with the connectors
+mated should read less than 1 ohm. A failure indicates a chafed or
+broken wire in the side console bundle — replace per AMM 92-10-04.

@@ -1,0 +1,35 @@
+AMM 22-10-22 — TOGA Pushbutton Removal and Installation
+Embraer Phenom 300 — Aircraft Maintenance Manual, Rev 32
+Aircraft: Phenom 300
+ATA 22 Auto Flight
+
+This procedure covers removal and installation of the TOGA pushbutton
+assembly on the side-stick controller.
+
+Tools and materials:
+- Standard avionics tool kit
+- Calibrated torque driver (in-lb range)
+- Lockwire per the materials list
+- Anti-static wrist strap
+
+Removal:
+1. Apply external electrical power and verify both side-stick TOGA
+   discretes are LOW on the FGC discrete input page, then remove
+   electrical power.
+2. Open and lock open the side console access panel per AMM 25-10-08.
+3. Disconnect the TOGA pushbutton harness at connector P22-A12.
+4. Remove the four retaining screws securing the pushbutton to the
+   side-stick housing and lift the pushbutton away.
+
+Installation:
+1. Inspect the new pushbutton for damage and confirm part applicability.
+2. Position the pushbutton in the side-stick housing and install the
+   four retaining screws. Torque per the table in AMM 22-10-22 fig 3.
+3. Reconnect the harness at connector P22-A12 and verify the connector
+   latch is fully engaged.
+4. Close the side console access panel.
+5. Apply external electrical power and perform the functional test:
+   press the TOGA pushbutton and confirm the FGC discrete transitions
+   LOW->HIGH and that the autoflight system displays "TOGA" on the PFD.
+
+Reference SB-22-04 for the superseded micro-switch part number.

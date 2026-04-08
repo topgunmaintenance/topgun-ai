@@ -1,0 +1,39 @@
+FIM-22-10-00 — TOGA Switch Fault Isolation
+Embraer Phenom 300 — Fault Isolation Manual, Rev 14
+Aircraft: Phenom 300
+ATA 22 Auto Flight
+
+Symptom: TOGA lever button not working — autoflight does not transition
+to TOGA mode when the side-stick TOGA pushbutton is pressed at any
+phase of flight.
+
+Likely causes (ordered by frequency in fleet history):
+1. Failed TOGA pushbutton micro-switch on the captain or first officer
+   side-stick. The micro-switch is a discrete input to the FGC
+   (Flight Guidance Computer) via the side-stick electronics module.
+2. Open or chafed wire between the TOGA pushbutton and the FGC discrete
+   input pin on connector P22-A12 — see WDM 22-10-04 for the wiring run.
+3. Failed FGC discrete input channel (less common; requires FGC swap).
+4. Software config drift after avionics load — verify with the post-load
+   functional check listed in AMM 22-10-15.
+
+Step-by-step isolation:
+- Step 1: With aircraft on the ground, electrical power applied,
+  perform the cockpit BIT and confirm the FGC reports no faults on
+  the discrete input page.
+- Step 2: Press the TOGA pushbutton on each side stick in turn while
+  observing the FGC discrete input page. A working pushbutton causes
+  the TOGA discrete to transition LOW->HIGH momentarily.
+- Step 3: If the discrete does not transition on a given side, swap
+  the TOGA pushbutton with the spare per AMM 22-10-22 and retest.
+- Step 4: If the discrete still does not transition, perform the
+  continuity check from connector P22-A12 pin 14 to the side-stick
+  TOGA pushbutton return per WDM 22-10-04.
+- Step 5: If continuity is good, replace the FGC per AMM 22-10-30 and
+  perform the post-installation functional test.
+
+Cross references:
+- AMM 22-10-22 — TOGA pushbutton replacement
+- AMM 22-10-30 — Flight Guidance Computer replacement
+- WDM 22-10-04 — TOGA pushbutton wiring diagram
+- SB-22-04 — TOGA pushbutton micro-switch supersession

@@ -106,13 +106,24 @@ class DocumentService:
         )
 
         status = self._status_from(result)
+        fields = result.extracted_fields
         doc = {
             "id": doc_id,
             "title": title or filename,
             "type": result.classified_type,
+            "source_family": fields.get("source_family"),
             "aircraft": aircraft
-            or _first(result.extracted_fields.get("tail_numbers")),
+            or fields.get("aircraft_model")
+            or _first(fields.get("tail_numbers")),
+            "aircraft_model": fields.get("aircraft_model"),
             "source": source,
+            "url": fields.get("url"),
+            "vendor": fields.get("vendor"),
+            "document_code": fields.get("document_code"),
+            "revision": fields.get("revision"),
+            "ata": list(fields.get("ata_chapters") or []),
+            "components": list(fields.get("components") or []),
+            "captured_at": fields.get("captured_at"),
             "status": status,
             "pages": result.page_count,
             "size_mb": round(len(payload) / (1024 * 1024), 2),
@@ -176,6 +187,13 @@ def _report_dict(result: IngestionResult) -> dict[str, Any]:
                 "ata_chapters",
                 "part_numbers",
                 "dates",
+                "aircraft_model",
+                "components",
+                "systems",
+                "service_bulletins",
+                "document_code",
+                "revision",
+                "source_family",
             }
         },
         "error": result.error,

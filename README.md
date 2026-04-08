@@ -90,6 +90,52 @@ Pipeline and query layer details are in
   backend, page count, chunk count, OCR pages, extracted fields, error)
   plus up to six chunk previews from the vector store.
 
+### Phase 3 — Multi-source federation + browser connector (complete)
+- **Source family taxonomy** — every document is classified into a
+  canonical family: `FIM`, `WDM`, `AMM`, `IPC`, `SB`, `HISTORY`, `BROWSER`,
+  `EXTERNAL`, or `OTHER`. The family drives retrieval routing, ranking,
+  and the grouped UI sections.
+- **Query intent classifier** (`app/query/intent_classifier.py`)
+  extracts aircraft, symptom, components, system hints, and likely ATA
+  chapters from a free-text question, then picks the right per-family
+  weights for retrieval. For troubleshooting questions the order is
+  `FIM > WDM > AMM > IPC > SB > HISTORY`.
+- **Source federation query engine** runs one similarity-search lane per
+  source family in the vector store, plus an `external` lane for
+  registered connectors, then merges them with intent-weighted RRF.
+  The original cosine retrieval score is preserved through fusion so
+  the formatter can still decide weak / insufficient honestly.
+- **Browser-assisted manual connector** (`app/connectors/browser.py` +
+  `POST /api/connectors/browser/push`) lets a browser extension, local
+  helper, or future Playwright driver push the visible page from an
+  authenticated portal into Topgun AI. Pushed text runs through the
+  standard ingestion pipeline and lands in the vector store under the
+  `BROWSER` family, immediately participating in federation. Topgun AI
+  never scrapes the open internet.
+- **Coverage detector** (`app/query/coverage.py`) compares the families
+  the intent classifier predicted as likely needed against the families
+  actually represented in the index + connectors, and produces a
+  "Missing likely sources" report explaining what kind of manual is
+  needed and why. Confidence is reduced when likely sources are
+  missing — never raised by guessing.
+- **Grouped answer sections + troubleshooting path** — the answer
+  formatter renders one section per source family (Troubleshooting,
+  Wiring / Electrical, Maintenance Procedure, Parts / Components,
+  Service Bulletins, Browser-derived results, Internal History) and
+  composes a numbered troubleshooting path from the highest-priority
+  family that returned hits.
+- **Expanded document + citation metadata**: every chunk and citation
+  now carries `source_family`, `aircraft_model`, `ata`, `component`,
+  `document_code`, `revision`, `vendor`, and `url` so the UI can label
+  each result and link straight to the original source when one exists.
+- **Phenom 300 TOGA fixture corpus** under `sample_data/sources/`
+  (FIM, WDM, AMM, SB, work-order history) is auto-ingested at backend
+  startup so the canonical question
+  *"TOGA lever button not working on a Phenom 300"* round-trips through
+  the real federation, returns multi-family citations, and explicitly
+  flags the `BROWSER` family as a missing likely source until you push
+  a portal page in.
+
 ---
 
 ## Prerequisites
@@ -173,12 +219,26 @@ After both servers are up:
 3. Open **Library** and click the new document. The detail page shows
    the parser backend, chunk count, OCR status, extracted tail
    numbers / ATA chapters / part numbers, and chunk previews.
-4. Open **Query** and ask a question whose answer is in your uploaded
-   document. You should see citations that point at it, with a
-   confidence label of `high`, `medium`, or `low` (and a `weak` flag on
-   any citation whose retrieval score was below the floor).
-5. Ask an off-topic question and confirm Topgun AI returns
-   `insufficient` rather than fabricating an answer.
+4. Open **Query**. The default question is
+   *"TOGA lever button not working on a Phenom 300"*. Topgun AI should
+   return:
+   - the **detected intent** (aircraft = Phenom 300, intent kind =
+     troubleshooting, predicted ATA = 22),
+   - a **likely troubleshooting path** built from the FIM excerpt,
+   - **grouped sections** for Troubleshooting (FIM), Wiring /
+     Electrical (WDM), Maintenance Procedure (AMM), Service Bulletins
+     (SB-22-04), and Internal History (work order),
+   - a **Missing likely sources** card flagging `BROWSER` because no
+     authenticated portal page has been pushed yet.
+5. Open the **Push from authenticated browser** card on the right and
+   paste a manual page (title + URL + visible text) you're already
+   logged into in your dedicated browser. Re-run the query — the
+   `BROWSER` family now appears in the federation, the missing-source
+   gap clears, and confidence rises.
+6. Ask an off-topic question (e.g. *"How do I bake bread?"*) and
+   confirm Topgun AI returns `insufficient` instead of fabricating
+   an answer, with a Missing-likely-sources panel telling you which
+   manuals would have been needed.
 
 ---
 
@@ -212,15 +272,22 @@ Short version:
    in-memory vector store, weak-evidence-aware answer formatter,
    document detail endpoint, frontend upload + detail page wired
    end-to-end.
-3. **Phase 3 — Production retrieval** (next): Postgres + pgvector
+3. **Phase 3 — Multi-source federation + browser connector** (✅
+   complete): intent classifier, source family taxonomy, federated
+   query engine, coverage detector ("Missing likely sources"),
+   browser-push connector with `POST /api/connectors/browser/push`,
+   grouped UI sections in Query Workspace, expanded document and
+   citation metadata, Phenom 300 TOGA fixture validation.
+4. **Phase 4 — Production retrieval** (next): Postgres + pgvector
    backend with the same `VectorStore` interface, real OpenAI
-   embeddings, server-side ingestion workers, source-drawer deep links,
-   auth + audit history, document viewer.
-4. **Grounded synthesis with Anthropic** — structured answers with
+   embeddings, server-side ingestion workers, source-drawer deep
+   links, auth + audit history, document viewer, browser-extension
+   adapter, optional Playwright connector for headed automation.
+5. **Grounded synthesis with Anthropic** — structured answers with
    citations and per-citation justification.
-5. **Fleet intelligence** — recurring fault clustering and parts
+6. **Fleet intelligence** — recurring fault clustering and parts
    stocking signals.
-6. **Scan ingestion** — camera capture of part tags and labels on mobile.
+7. **Scan ingestion** — camera capture of part tags and labels on mobile.
 
 ### Known Phase-2 limitations
 

@@ -12,14 +12,29 @@ log = get_logger(__name__)
 
 
 _KEYWORDS: dict[str, tuple[str, ...]] = {
+    "FIM": (
+        "fault isolation",
+        "fim",
+        "troubleshoot",
+        "isolation manual",
+        "maintenance message",
+    ),
+    "WDM": (
+        "wiring diagram",
+        "wdm",
+        "wiring manual",
+        "schematic",
+        "connector view",
+        "pinout",
+    ),
     "AMM": ("maintenance manual", "amm", "aircraft maintenance"),
     "IPC": ("illustrated parts", "ipc", "parts catalog"),
     "SB": ("service bulletin", "sb-", "alert bulletin"),
     "WORK_ORDER": ("work order", "wo-", "discrepancy", "corrective action"),
     "LOGBOOK": ("logbook", "log book", "aircraft log"),
-    "TROUBLESHOOTING": ("troubleshoot", "fault isolation", "shop report"),
-    "PARTS_CATALOG": ("parts catalog", "parts list"),
+    "PARTS_CATALOG": ("parts list",),
     "INSPECTION_PROGRAM": ("inspection program", "phase inspection", "task card"),
+    "BROWSER_CAPTURE": ("browser capture", "captured from browser"),
 }
 
 

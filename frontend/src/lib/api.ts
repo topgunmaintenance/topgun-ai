@@ -95,6 +95,21 @@ export const api = {
       body: JSON.stringify({ question }),
     });
   },
+
+  async pushBrowserPage(payload: {
+    title: string;
+    text: string;
+    url?: string;
+    aircraft?: string;
+    vendor?: string;
+    document_code?: string;
+    revision?: string;
+  }): Promise<{ status: string; doc_id: string }> {
+    return jsonRequest("/api/connectors/browser/push", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
 };
 
 // ---------------------------------------------------------------------

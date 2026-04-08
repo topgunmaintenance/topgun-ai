@@ -11,6 +11,7 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.demo_store import get_demo_store
 from app.core.logging import configure_logging, get_logger
+from app.core.seed_loader import seed_sources
 
 log = get_logger(__name__)
 
@@ -21,7 +22,11 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     log.info("Topgun AI backend starting (env=%s, demo=%s)", settings.env, settings.demo_mode)
     if settings.demo_mode:
-        get_demo_store()  # warm the store
+        store = get_demo_store()
+        try:
+            seed_sources(store)
+        except Exception as exc:  # pragma: no cover - defensive
+            log.warning("seed_sources failed: %s", exc)
     yield
     log.info("Topgun AI backend stopping")
 

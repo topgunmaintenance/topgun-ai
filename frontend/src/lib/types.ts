@@ -3,24 +3,47 @@
 // backend/app/schemas/. Keep them in sync when the API contract changes.
 
 export type DocumentType =
+  | "FIM"
   | "AMM"
   | "IPC"
+  | "WDM"
   | "SB"
   | "WORK_ORDER"
   | "LOGBOOK"
   | "TROUBLESHOOTING"
   | "PARTS_CATALOG"
   | "INSPECTION_PROGRAM"
+  | "BROWSER_CAPTURE"
   | "UNKNOWN";
 
 export type DocumentStatus = "uploaded" | "processing" | "indexed" | "failed";
+
+export type SourceFamily =
+  | "FIM"
+  | "WDM"
+  | "AMM"
+  | "IPC"
+  | "SB"
+  | "HISTORY"
+  | "BROWSER"
+  | "EXTERNAL"
+  | "OTHER";
 
 export interface DocumentSummary {
   id: string;
   title: string;
   type: DocumentType;
+  source_family?: SourceFamily | null;
   aircraft?: string | null;
+  aircraft_model?: string | null;
   source?: string | null;
+  url?: string | null;
+  vendor?: string | null;
+  document_code?: string | null;
+  revision?: string | null;
+  ata?: string[];
+  components?: string[];
+  captured_at?: string | null;
   status: DocumentStatus;
   pages?: number | null;
   size_mb?: number | null;
@@ -77,21 +100,55 @@ export interface ConfidenceReport {
 export interface AnswerSection {
   heading: string;
   bullets: string[];
+  family?: SourceFamily | null;
 }
 
 export interface Citation {
   document_id: string;
   document_title: string;
   document_type: string;
+  source_family?: SourceFamily | null;
   page: number;
   char_start?: number;
   char_end?: number;
   snippet: string;
   score: number;
-  lane: "manual" | "history" | "parts" | "pattern";
+  lane: string;
   source?: string;
+  aircraft_model?: string | null;
+  ata?: string[];
+  component?: string | null;
+  document_code?: string | null;
+  url?: string | null;
+  vendor?: string | null;
   ocr?: boolean;
   weak?: boolean;
+}
+
+export interface QueryIntentSummary {
+  raw_question?: string | null;
+  aircraft?: string | null;
+  symptom?: string | null;
+  component_hints: string[];
+  system_hints: string[];
+  ata_hints: string[];
+  intent_kind: string;
+  family_priority: SourceFamily[];
+  family_weights?: Record<string, number>;
+}
+
+export interface CoverageGap {
+  family: SourceFamily;
+  label: string;
+  reason: string;
+  vendor_hint?: string | null;
+}
+
+export interface CoverageReport {
+  likely_families: SourceFamily[];
+  available_families: SourceFamily[];
+  missing_families: SourceFamily[];
+  gaps: CoverageGap[];
 }
 
 export interface DocRef {
@@ -101,24 +158,20 @@ export interface DocRef {
 }
 
 export interface ExtractedEntity {
-  kind:
-    | "aircraft"
-    | "tail_number"
-    | "ata"
-    | "part_number"
-    | "bulletin"
-    | "inspector"
-    | "date";
+  kind: string;
   value: string;
 }
 
 export interface QueryResponse {
   question: string;
   answer: string;
+  troubleshooting_path?: string[];
   sections: AnswerSection[];
   citations: Citation[];
   related_documents: DocRef[];
   entities: ExtractedEntity[];
+  intent?: QueryIntentSummary | null;
+  coverage?: CoverageReport | null;
   confidence: ConfidenceReport;
   followups: string[];
   latency_ms: number;
