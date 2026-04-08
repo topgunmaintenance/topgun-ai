@@ -6,6 +6,7 @@ import { EntitiesPanel } from "@/components/query/EntitiesPanel";
 import { FollowupPrompts } from "@/components/query/FollowupPrompts";
 import { IntentPanel } from "@/components/query/IntentPanel";
 import { MissingSourcesPanel } from "@/components/query/MissingSourcesPanel";
+import { PriorSimilarJobsPanel } from "@/components/query/PriorSimilarJobsPanel";
 import { QueryInput } from "@/components/query/QueryInput";
 import { RelatedDocsPanel } from "@/components/query/RelatedDocsPanel";
 import { SessionHeader } from "@/components/query/SessionHeader";
@@ -64,6 +65,7 @@ export default async function QueryWorkspacePage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <AnswerPanel response={response} />
+          <PriorSimilarJobsPanel jobs={response.prior_similar_jobs} />
           <MissingSourcesPanel coverage={response.coverage} />
           <CitationsPanel citations={response.citations} />
         </div>
