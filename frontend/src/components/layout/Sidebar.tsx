@@ -7,8 +7,9 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard", glyph: "▤", shortcut: "1" },
   { href: "/query", label: "Query Workspace", glyph: "◇", shortcut: "2" },
   { href: "/library", label: "Document Library", glyph: "❐", shortcut: "3" },
-  { href: "/insights", label: "Maintenance Insights", glyph: "△", shortcut: "4" },
-  { href: "/admin", label: "Admin / System", glyph: "⌬", shortcut: "5" },
+  { href: "/history", label: "History / Jobs", glyph: "⌘", shortcut: "4" },
+  { href: "/insights", label: "Maintenance Insights", glyph: "△", shortcut: "5" },
+  { href: "/admin", label: "Admin / System", glyph: "⌬", shortcut: "6" },
 ];
 
 const FLEET = [
