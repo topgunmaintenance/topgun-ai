@@ -80,6 +80,16 @@ class DemoStore:
             self.documents.insert(0, doc)
         return doc
 
+    def upsert_document(self, doc: dict[str, Any]) -> dict[str, Any]:
+        """Insert or replace a document by id."""
+        with self._lock:
+            for i, existing in enumerate(self.documents):
+                if existing["id"] == doc["id"]:
+                    self.documents[i] = doc
+                    return doc
+            self.documents.insert(0, doc)
+        return doc
+
     # ------------------------------------------------------------------
     # Queries
     # ------------------------------------------------------------------

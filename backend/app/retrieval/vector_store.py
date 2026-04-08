@@ -21,6 +21,13 @@ class StoredChunk:
     page_end: int
     position: int
     embedding: list[float]
+    char_start: int = 0
+    char_end: int = 0
+    char_count: int = 0
+    token_estimate: int = 0
+    content_hash: str = ""
+    source: str = "unknown"
+    ocr: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -41,6 +48,12 @@ class VectorStore(Protocol):
         top_k: int = 10,
         doc_types: list[str] | None = None,
     ) -> list[tuple[StoredChunk, float]]: ...
+
+    def list_chunks(self, document_id: str) -> list[StoredChunk]: ...
+
+    def chunk_count(self, document_id: str) -> int: ...
+
+    def delete_document(self, document_id: str) -> int: ...
 
 
 # ---------------------------------------------------------------------------
@@ -73,6 +86,13 @@ class MemoryVectorStore:
                     page_end=chunk["page_end"],
                     position=chunk["position"],
                     embedding=vec,
+                    char_start=chunk.get("char_start", 0),
+                    char_end=chunk.get("char_end", 0),
+                    char_count=chunk.get("char_count", len(chunk.get("text", ""))),
+                    token_estimate=chunk.get("token_estimate", 0),
+                    content_hash=chunk.get("content_hash", ""),
+                    source=chunk.get("source", "unknown"),
+                    ocr=bool(chunk.get("ocr", False)),
                     metadata=dict(metadata),
                 )
                 self._chunks[stored.id] = stored
@@ -95,6 +115,25 @@ class MemoryVectorStore:
         ]
         scored.sort(key=lambda pair: pair[1], reverse=True)
         return scored[:top_k]
+
+    def list_chunks(self, document_id: str) -> list[StoredChunk]:
+        with self._lock:
+            return sorted(
+                (c for c in self._chunks.values() if c.document_id == document_id),
+                key=lambda c: (c.page_start, c.position),
+            )
+
+    def chunk_count(self, document_id: str) -> int:
+        with self._lock:
+            return sum(1 for c in self._chunks.values() if c.document_id == document_id)
+
+    def delete_document(self, document_id: str) -> int:
+        with self._lock:
+            before = len(self._chunks)
+            self._chunks = {
+                cid: c for cid, c in self._chunks.items() if c.document_id != document_id
+            }
+            return before - len(self._chunks)
 
 
 # ---------------------------------------------------------------------------

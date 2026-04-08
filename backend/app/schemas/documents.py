@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -37,8 +37,40 @@ class DocumentSummary(BaseModel):
     tags: list[str] = Field(default_factory=list)
 
 
+class IngestionReport(BaseModel):
+    """How a document was processed by the ingestion pipeline."""
+
+    parser_backend: str = "unknown"
+    page_count: int = 0
+    chunk_count: int = 0
+    indexed: bool = False
+    ocr_applied: bool = False
+    ocr_pages: list[int] = Field(default_factory=list)
+    ocr_skipped_reason: str | None = None
+    extracted_fields: dict[str, Any] = Field(default_factory=dict)
+    error: str | None = None
+
+
+class ChunkPreview(BaseModel):
+    """A short, citable slice of an indexed document."""
+
+    id: str
+    page_start: int
+    page_end: int
+    position: int
+    char_start: int
+    char_end: int
+    char_count: int
+    token_estimate: int
+    source: str
+    ocr: bool
+    snippet: str
+
+
 class DocumentDetail(DocumentSummary):
     summary: str | None = None
+    ingestion: IngestionReport | None = None
+    chunk_previews: list[ChunkPreview] = Field(default_factory=list)
 
 
 class DocumentListResponse(BaseModel):

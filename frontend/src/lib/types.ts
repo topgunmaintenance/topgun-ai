@@ -30,9 +30,36 @@ export interface DocumentSummary {
   summary?: string | null;
 }
 
-// The backend returns the same shape for list and detail in the MVP.
-// Aliasing keeps the API client honest if the contract diverges later.
-export type DocumentDetail = DocumentSummary;
+export interface IngestionReport {
+  parser_backend: string;
+  page_count: number;
+  chunk_count: number;
+  indexed: boolean;
+  ocr_applied: boolean;
+  ocr_pages: number[];
+  ocr_skipped_reason?: string | null;
+  extracted_fields: Record<string, unknown>;
+  error?: string | null;
+}
+
+export interface ChunkPreview {
+  id: string;
+  page_start: number;
+  page_end: number;
+  position: number;
+  char_start: number;
+  char_end: number;
+  char_count: number;
+  token_estimate: number;
+  source: string;
+  ocr: boolean;
+  snippet: string;
+}
+
+export interface DocumentDetail extends DocumentSummary {
+  ingestion?: IngestionReport | null;
+  chunk_previews?: ChunkPreview[];
+}
 
 export interface DocumentListResponse {
   documents: DocumentSummary[];
@@ -57,9 +84,14 @@ export interface Citation {
   document_title: string;
   document_type: string;
   page: number;
+  char_start?: number;
+  char_end?: number;
   snippet: string;
   score: number;
   lane: "manual" | "history" | "parts" | "pattern";
+  source?: string;
+  ocr?: boolean;
+  weak?: boolean;
 }
 
 export interface DocRef {

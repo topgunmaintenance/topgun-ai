@@ -42,6 +42,7 @@ class IngestionContext:
 
     # Filled by stages
     pages: list[str] = field(default_factory=list)
+    page_extractions: list[dict[str, Any]] = field(default_factory=list)
     classified_type: str = "UNKNOWN"
     extracted_fields: dict[str, Any] = field(default_factory=dict)
     chunks: list[dict[str, Any]] = field(default_factory=list)
@@ -56,7 +57,12 @@ class IngestionResult:
     page_count: int
     chunk_count: int
     indexed: bool
+    parser_backend: str = "unknown"
+    ocr_applied: bool = False
+    ocr_pages: list[int] = field(default_factory=list)
+    extracted_fields: dict[str, Any] = field(default_factory=dict)
     summary: str | None = None
+    error: str | None = None
 
 
 class IngestionPipeline:
@@ -137,7 +143,12 @@ class IngestionPipeline:
                 page_count=len(ctx.pages),
                 chunk_count=len(ctx.chunks),
                 indexed=False,
+                parser_backend=ctx.extracted_fields.get("parser_backend", "unknown"),
+                ocr_applied=bool(ctx.extracted_fields.get("ocr_applied")),
+                ocr_pages=list(ctx.extracted_fields.get("ocr_pages", [])),
+                extracted_fields=dict(ctx.extracted_fields),
                 summary=f"Failed at {exc.stage}: {exc.reason}",
+                error=f"{exc.stage}: {exc.reason}",
             )
 
         return IngestionResult(
@@ -146,16 +157,26 @@ class IngestionPipeline:
             page_count=len(ctx.pages),
             chunk_count=len(ctx.chunks),
             indexed=ctx.indexed,
+            parser_backend=ctx.extracted_fields.get("parser_backend", "unknown"),
+            ocr_applied=bool(ctx.extracted_fields.get("ocr_applied")),
+            ocr_pages=list(ctx.extracted_fields.get("ocr_pages", [])),
+            extracted_fields=dict(ctx.extracted_fields),
             summary=_summary(ctx),
         )
 
     # ------------------------------------------------------------------
     @staticmethod
     def _needs_ocr(ctx: IngestionContext) -> bool:
+        """Run OCR if any page is empty/low-text or no pages came back."""
         if not ctx.pages:
             return True
-        average = sum(len(p) for p in ctx.pages) / max(len(ctx.pages), 1)
-        return average < 40  # char threshold; see docs/ingestion-pipeline.md
+        if any(info.get("needs_ocr") for info in ctx.page_extractions):
+            return True
+        # Defensive fallback for parsers that didn't populate extractions.
+        if not ctx.page_extractions:
+            average = sum(len(p) for p in ctx.pages) / max(len(ctx.pages), 1)
+            return average < 40
+        return False
 
 
 def _summary(ctx: IngestionContext) -> str:

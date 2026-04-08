@@ -26,9 +26,14 @@ class Citation(BaseModel):
     document_title: str
     document_type: str
     page: int
+    char_start: int = 0
+    char_end: int = 0
     snippet: str
     score: float = Field(ge=0.0, le=1.0)
     lane: Literal["manual", "history", "parts", "pattern"]
+    source: str = "unknown"
+    ocr: bool = False
+    weak: bool = False
 
 
 class ExtractedEntity(BaseModel):
