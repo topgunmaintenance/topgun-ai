@@ -162,6 +162,21 @@ export interface ExtractedEntity {
   value: string;
 }
 
+export interface PriorSimilarJob {
+  id: string;
+  document_id: string;
+  aircraft: string;
+  tail_number?: string | null;
+  discrepancy: string;
+  ata?: string | null;
+  status: string;
+  technician?: string | null;
+  occurred_on?: string | null;
+  score: number;
+  snippet?: string | null;
+  corrective_action?: string | null;
+}
+
 export interface QueryResponse {
   question: string;
   answer: string;
@@ -174,7 +189,59 @@ export interface QueryResponse {
   coverage?: CoverageReport | null;
   confidence: ConfidenceReport;
   followups: string[];
+  prior_similar_jobs?: PriorSimilarJob[];
   latency_ms: number;
+}
+
+// ---------------------------------------------------------------------
+// Discrepancy / job records (Phase 4)
+// ---------------------------------------------------------------------
+
+export type JobStatus = "open" | "in_progress" | "closed";
+
+export interface JobCreateRequest {
+  aircraft: string;
+  tail_number?: string | null;
+  discrepancy: string;
+  ata?: string | null;
+  symptoms?: string | null;
+  actions_taken?: string | null;
+  parts_replaced?: string[];
+  corrective_action?: string | null;
+  technician?: string | null;
+  technician_notes?: string | null;
+  work_order?: string | null;
+  occurred_on?: string | null;
+  status?: JobStatus;
+}
+
+export interface JobSummary {
+  id: string;
+  aircraft: string;
+  tail_number?: string | null;
+  discrepancy: string;
+  ata?: string | null;
+  status: JobStatus | string;
+  technician?: string | null;
+  work_order?: string | null;
+  occurred_on?: string | null;
+  created_at: string;
+}
+
+export interface JobRecord extends JobSummary {
+  symptoms?: string | null;
+  actions_taken?: string | null;
+  parts_replaced: string[];
+  corrective_action?: string | null;
+  technician_notes?: string | null;
+  document_id: string;
+  chunk_count: number;
+  indexed: boolean;
+}
+
+export interface JobListResponse {
+  jobs: JobSummary[];
+  total: number;
 }
 
 export interface RecurringCluster {

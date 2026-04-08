@@ -11,6 +11,9 @@ import type {
   DocumentListResponse,
   DocumentSummary,
   InsightsResponse,
+  JobCreateRequest,
+  JobListResponse,
+  JobRecord,
   QueryResponse,
   RecentQuery,
   SystemStatusResponse,
@@ -110,6 +113,34 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
+
+  // -----------------------------------------------------------------
+  // Jobs (Phase 4)
+  // -----------------------------------------------------------------
+  async listJobs(filters: {
+    aircraft?: string;
+    tail_number?: string;
+    ata?: string;
+    status?: string;
+  } = {}): Promise<JobListResponse> {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(filters)) {
+      if (v) q.set(k, v);
+    }
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return jsonRequest(`/api/jobs${suffix}`);
+  },
+
+  async getJob(id: string): Promise<JobRecord> {
+    return jsonRequest(`/api/jobs/${encodeURIComponent(id)}`);
+  },
+
+  async createJob(payload: JobCreateRequest): Promise<JobRecord> {
+    return jsonRequest("/api/jobs", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
 };
 
 // ---------------------------------------------------------------------
@@ -156,5 +187,28 @@ export async function safeRecentQueries(limit = 5): Promise<RecentQuery[]> {
     return await api.recentQueries(limit);
   } catch {
     return demoData.recentQueries.slice(0, limit);
+  }
+}
+
+export async function safeListJobs(
+  filters: {
+    aircraft?: string;
+    tail_number?: string;
+    ata?: string;
+    status?: string;
+  } = {},
+): Promise<JobListResponse> {
+  try {
+    return await api.listJobs(filters);
+  } catch {
+    return { jobs: [], total: 0 };
+  }
+}
+
+export async function safeGetJob(id: string): Promise<JobRecord | null> {
+  try {
+    return await api.getJob(id);
+  } catch {
+    return null;
   }
 }
