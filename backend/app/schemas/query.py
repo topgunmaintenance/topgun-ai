@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.schemas.common import ConfidenceReport, DocRef
 from app.schemas.documents import SourceFamily
+from app.schemas.jobs import PriorSimilarJob
 
 
 class QueryRequest(BaseModel):
@@ -87,6 +88,13 @@ class QueryResponse(BaseModel):
     coverage: CoverageReport | None = None
     confidence: ConfidenceReport
     followups: list[str] = Field(default_factory=list)
+    # "Seen before" — prior structured discrepancy/job records that
+    # match the current question, sourced from JobService.find_similar
+    # (HISTORY-family vector search, content-overlap-gated, joined back
+    # onto JobRecords so each entry carries corrective_action and
+    # technician metadata). Only structured jobs are surfaced here; the
+    # normal HISTORY citation flow still renders seeded work orders.
+    prior_similar_jobs: list[PriorSimilarJob] = Field(default_factory=list)
     latency_ms: int = 0
 
 
